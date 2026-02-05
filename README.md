@@ -1,177 +1,231 @@
-# Supabase CLI
+# TalentX - AI-Powered Job Marketplace
 
-[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
-](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
+A modern job marketplace that connects AI & Data Talents with Employers using AI-powered matching.
 
-[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
+## Features
 
-This repository contains all the functionality for Supabase CLI.
+### For Employers
+- Post jobs with AI-generated descriptions
+- View applicant tracking
+- Invite top-matched talents
+- Manage job postings
 
-- [x] Running Supabase locally
-- [x] Managing database migrations
-- [x] Creating and deploying Supabase Functions
-- [x] Generating types directly from your database schema
-- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
+### For Talents
+- Discover AI-matched job opportunities
+- Apply to jobs manually or via invitations
+- Track application history
+- Receive and manage invitations
 
-## Getting started
+### Public Features
+- Browse available jobs
+- Search by job title/role
+- View job details
+- Real-time application counters
 
-### Install the CLI
+## Architecture
 
-Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
+- **Backend**: Node.js + Express + Supabase
+- **Frontend**: Next.js + Tailwind CSS
+- **Database**: Supabase (PostgreSQL)
+- **AI**: OpenAI API for job description generation and matching
 
-```bash
-npm i supabase --save-dev
+## Setup Instructions
+
+### 1. Backend Setup
+
+1. Navigate to backend directory:
+   ```bash
+   cd talentx-backend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Update `.env` with your credentials:
+   ```
+   PORT=3001
+   NODE_ENV=development
+   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+   SUPABASE_URL=your-supabase-url
+   SUPABASE_SERVICE_KEY=your-supabase-service-key
+   OPENAI_API_KEY=your-openai-api-key
+   ```
+
+4. Set up Supabase database:
+   - Create a new project at [supabase.com](https://supabase.com)
+   - Run the SQL in `schema.sql` in your Supabase SQL editor
+   - Get your project URL and service key from settings
+
+5. Seed the database with sample data:
+   ```bash
+   node seed.js
+   ```
+
+6. Start the backend server:
+   ```bash
+   npm run dev
+   ```
+
+### 2. Frontend Setup
+
+1. Navigate to frontend directory:
+   ```bash
+   cd talentx-frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create environment file:
+   ```
+   NEXT_PUBLIC_API_URL=http://localhost:3001/api
+   ```
+   Save this as `.env.local`
+
+4. Start the frontend development server:
+   ```bash
+   npm run dev
+   ```
+
+## Sample Login Credentials
+
+After seeding the database, you can use these credentials:
+
+### Employers:
+- **Email**: employer1@techcorp.com, **Password**: password123
+- **Email**: employer2@innovateco.com, **Password**: password123
+- **Email**: employer3@datapro.com, **Password**: password123
+
+### Talents:
+- **Email**: talent1@dev.com, **Password**: password123
+- **Email**: talent2@dev.com, **Password**: password123
+- **Email**: talent3@dev.com, **Password**: password123
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `GET /api/auth/me` - Get current user
+
+### Jobs
+- `GET /api/jobs` - Get all jobs (public)
+- `GET /api/jobs/:id` - Get job by ID
+- `POST /api/jobs` - Create job (employer only)
+- `GET /api/jobs/employer/my-jobs` - Get employer jobs
+- `GET /api/jobs/talent/matched` - Get matched jobs for talent
+
+### Applications
+- `POST /api/applications` - Apply to job
+- `GET /api/applications/job/:jobId` - Get job applicants (employer only)
+- `GET /api/applications/my-applications` - Get talent applications
+
+### Invitations
+- `POST /api/invitations` - Create invitation (employer only)
+- `GET /api/invitations/my-invitations` - Get talent invitations
+- `PUT /api/invitations/:id/respond` - Respond to invitation (talent only)
+- `GET /api/invitations/matched-talents/:jobId` - Get matched talents for job
+
+## Project Structure
+
+### Backend (`talentx-backend/`)
+```
+├── config/
+│   └── database.js          # Supabase configuration
+├── middleware/
+│   └── auth.js              # Authentication middleware
+├── routes/
+│   ├── auth.js              # Authentication routes
+│   ├── jobs.js              # Job management routes
+│   ├── applications.js      # Application routes
+│   └── invitations.js       # Invitation routes
+├── services/
+│   └── aiService.js         # AI integration (OpenAI)
+├── schema.sql               # Database schema
+├── seed.js                  # Sample data generator
+└── index.js                 # Express server entry point
 ```
 
-When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
-
+### Frontend (`talentx-frontend/`)
 ```
-NODE_OPTIONS=--no-experimental-fetch yarn add supabase
-```
-
-> **Note**
-For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
-
-<details>
-  <summary><b>macOS</b></summary>
-
-  Available via [Homebrew](https://brew.sh). To install:
-
-  ```sh
-  brew install supabase/tap/supabase
-  ```
-
-  To install the beta release channel:
-  
-  ```sh
-  brew install supabase/tap/supabase-beta
-  brew link --overwrite supabase-beta
-  ```
-  
-  To upgrade:
-
-  ```sh
-  brew upgrade supabase
-  ```
-</details>
-
-<details>
-  <summary><b>Windows</b></summary>
-
-  Available via [Scoop](https://scoop.sh). To install:
-
-  ```powershell
-  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
-  scoop install supabase
-  ```
-
-  To upgrade:
-
-  ```powershell
-  scoop update supabase
-  ```
-</details>
-
-<details>
-  <summary><b>Linux</b></summary>
-
-  Available via [Homebrew](https://brew.sh) and Linux packages.
-
-  #### via Homebrew
-
-  To install:
-
-  ```sh
-  brew install supabase/tap/supabase
-  ```
-
-  To upgrade:
-
-  ```sh
-  brew upgrade supabase
-  ```
-
-  #### via Linux packages
-
-  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
-
-  ```sh
-  sudo apk add --allow-untrusted <...>.apk
-  ```
-
-  ```sh
-  sudo dpkg -i <...>.deb
-  ```
-
-  ```sh
-  sudo rpm -i <...>.rpm
-  ```
-
-  ```sh
-  sudo pacman -U <...>.pkg.tar.zst
-  ```
-</details>
-
-<details>
-  <summary><b>Other Platforms</b></summary>
-
-  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
-
-  ```sh
-  go install github.com/supabase/cli@latest
-  ```
-
-  Add a symlink to the binary in `$PATH` for easier access:
-
-  ```sh
-  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
-  ```
-
-  This works on other non-standard Linux distros.
-</details>
-
-<details>
-  <summary><b>Community Maintained Packages</b></summary>
-
-  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
-  To install in your working directory:
-
-  ```bash
-  pkgx install supabase
-  ```
-
-  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
-</details>
-
-### Run the CLI
-
-```bash
-supabase bootstrap
+├── app/
+│   ├── jobs/[id]/           # Job detail page
+│   ├── apply/[id]/          # Apply to job page
+│   ├── employer/            # Employer dashboard
+│   ├── talent/              # Talent dashboard
+│   ├── login/               # Login page
+│   ├── register/            # Registration page
+│   ├── layout.tsx           # Root layout
+│   └── page.tsx             # Home page (job listings)
+├── components/
+│   ├── Navbar.js            # Navigation component
+│   └── AuthGuard.js         # Route protection component
+├── context/
+│   └── AuthContext.js       # Authentication state management
+└── lib/
+    └── api.js               # API utility functions
 ```
 
-Or using npx:
+## Testing the Application
 
-```bash
-npx supabase bootstrap
-```
+1. Start both servers (backend on port 3001, frontend on port 3000)
+2. Open http://localhost:3000 in your browser
+3. Browse jobs as a guest
+4. Register as an employer or talent
+5. Test the full workflow:
+   - **Employer**: Post jobs → View applicants → Invite talents
+   - **Talent**: View matched jobs → Apply to jobs → Respond to invitations
 
-The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+## AI Features
 
-## Docs
+### Job Description Generation
+- Uses OpenAI API to generate professional job descriptions based on title and tech stack
+- Falls back to template if API is unavailable
 
-Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+### Talent-Job Matching
+- Calculates compatibility scores between talent profiles and job requirements
+- Considers skill alignment, experience level, and bio relevance
+- Falls back to algorithmic scoring if AI is unavailable
 
-## Breaking changes
+## Key Features Demonstrated
 
-We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+✅ **Authentication & Authorization**
+- Role-based access control (Employer vs Talent)
+- JWT token-based authentication
+- Protected routes and API endpoints
 
-However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+✅ **Real-time Data**
+- Application counters that update instantly
+- Invitation status tracking
+- Live matching scores
 
-## Developing
+✅ **AI Integration**
+- Job description generation
+- Smart talent-job matching
+- Graceful fallbacks when AI is unavailable
 
-To run from source:
+✅ **Full CRUD Operations**
+- Complete job lifecycle management
+- Application tracking
+- Invitation management
 
-```sh
-# Go >= 1.22
-go run . help
-```
+✅ **Modern UI/UX**
+- Responsive design with Tailwind CSS
+- Clean, professional interface
+- Smooth user workflows
+
+✅ **Database Design**
+- Proper relational schema
+- Indexes for performance
+- Triggers for timestamp updates
+
+This MVP demonstrates a complete, working full-stack application with modern development practices, AI integration, and real-time features.
